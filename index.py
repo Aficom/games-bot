@@ -13,6 +13,7 @@ counting_channel = 1504485545479504103
 tic_tac_toe_channel = 1504485545479504103
 fruits = ["rocket", "spin", "blade", "spring", "bomb", "smoke", "spike", "flame", "dark", "sand", "ice", "rubber", "eagle", "ghost", "light", "diamond", "quake", "magma", "love", "spider", "sound", "phoenix", "creation", "blizzard", "buddha", "portal", "shadow", "venom", "spirit", "mammonth", "gravity", "trex", "dough", "gas", "lightning", "tiger", "yeti", "kitsune", "control", "dragon", "dragoneast", "dragonwest"]
 start = 0
+userlast = ""
 @bot.event
 async def on_ready():
     print(f'We have logged in as {bot.user}')
@@ -23,15 +24,22 @@ async def on_ready():
         print(f'Error syncing commands: {e}')
 @bot.event
 async def on_message(message):
+    global userlast
+    userlast = message.author.id
     global start
     if message.author.bot:
         return
     if message.channel.id == counting_channel:
-        
         if message.content.isdigit():
             if int(message.content) == start + 1:
-                start += 1
-                await message.add_reaction('✅')
+                if not message.author.id == userlast:
+                    userlast = message.author.id
+                    start += 1
+                    await message.add_reaction('✅')
+                else:
+                    await message.add_reaction('❌')
+                    start = 0
+                    await message.channel.send(f'{message.author.mention} Please wait for someone else to count! The next number is {start + 1}.')
             else:
                 start = 0
                 await message.add_reaction('❌')
