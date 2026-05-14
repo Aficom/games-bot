@@ -8,6 +8,7 @@ def home():
     return "Bot is alive!"
 
 def run():
+    # Render default bhabe port 10000 ba environment port use kore
     app.run(host='0.0.0.0', port=8080)
 
 def keep_alive():

@@ -40,6 +40,5 @@ async def on_message(message):
 async def roll(interaction: discord.Interaction):
     fruit = random.choice(fruits)
     await interaction.response.send_message(f'{interaction.user.mention} You rolled: {fruit}')
-
-bot.run(token)
 keep_alive()
+bot.run(token)
