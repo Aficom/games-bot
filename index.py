@@ -16,7 +16,39 @@ snumber = random.randint(1, 100)
 fromstart = 1
 lastUser = ""
 first = 0
-second = 0
+class Math(discord.ui.Select):
+    def __init__(self, answer):
+        options = []
+        fst = random.choice(["first", "second", "third"])
+        if fst == "first":
+            options.append(discord.SelectOption(label=str(round(answer, 2)), description="The first number"))
+            options.append(discord.SelectOption(label=str(round(answer+random.randint(1, 100), 2)), description="The second number"))
+            options.append(discord.SelectOption(label=str(round(answer-random.randint(1, 100), 2)), description="The third number"))
+        elif fst == "second":
+            options.append(discord.SelectOption(label=str(round(answer+random.randint(1, 100), 2)), description="The first number"))
+            options.append(discord.SelectOption(label=str(round(answer, 2)), description="The second number"))
+            options.append(discord.SelectOption(label=str(round(answer-random.randint(1, 100), 2)), description="The third number"))
+        elif fst == "third":
+            options.append(discord.SelectOption(label=str(round(answer+random.randint(1, 100), 2)), description="The first number"))
+            options.append(discord.SelectOption(label=str(round(answer-random.randint(1, 100), 2)), description="The second number"))
+            options.append(discord.SelectOption(label=str(round(answer, 2)), description="The third number"))
+        super().__init__(
+            placeholder="Choose the correct answer...",
+            min_values=1,
+            max_values=1,
+            options=options
+        )
+        
+        self.answer = answer
+    async def callback(self, interaction: discord.Interaction):
+        if self.values[0] == str(round(self.answer, 2)):
+            await interaction.response.send_message("Correct!")
+        else:
+            await interaction.response.send_message(f"Wrong! The correct answer was {round(self.answer, 2)}")
+class Mathview(View):
+    def __init__(self, answer):
+        super().__init__()
+        self.add_item(Math(answer))
 @bot.event
 async def on_ready():
     synched = await bot.tree.sync()
@@ -60,6 +92,20 @@ async def guessn(interaction:discord.Interaction, number:int):
         await interaction.response.send_message("The secret number is less than that number")
     elif number < snumber:
         await interaction.response.send_message("The secret number is greater than that number")
-    
+@bot.tree.command(name="math", description="answer to a math question")
+async def math(interaction:discord.Interaction):
+    first = random.randint(1, 10000)
+    second = random.randint(1, 10000)
+    operation = random.choice(["+", "-", "*", "/"])
+    answer = 0
+    if operation == "+":
+        answer = first + second
+    elif operation == "-":
+        answer = first - second
+    elif operation == "*":
+        answer = first * second
+    elif operation == "/":
+        answer = first / second
+    await interaction.response.send_message(f"What is {first} {operation} {second}?", view=Mathview(answer))
 keep_alive()
 bot.run(token)
