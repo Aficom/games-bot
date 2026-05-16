@@ -1,52 +1,65 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
+from discord.ui import View, Button
 import os
 import random
 from dotenv import load_dotenv
 load_dotenv()
 from keep_alive import keep_alive
+import asyncio
 token = os.getenv('TOKEN')
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix=["!", "?"], intents=intents)
-counting_channel = 1504485545479504103
-tic_tac_toe_channel = 1504485545479504103
-fruits = ["rocket", "spin", "blade", "spring", "bomb", "smoke", "spike", "flame", "dark", "sand", "ice", "rubber", "eagle", "ghost", "light", "diamond", "quake", "magma", "love", "spider", "sound", "phoenix", "creation", "blizzard", "buddha", "portal", "shadow", "venom", "spirit", "mammonth", "gravity", "trex", "dough", "gas", "lightning", "tiger", "yeti", "kitsune", "control", "dragon", "dragoneast", "dragonwest"]
-start = 0
-userlast = ""
+COUNTING_CHANNEL = 1504485545479504103
+snumber = random.randint(1, 100)
+fromstart = 1
+lastUser = ""
+first = 0
+second = 0
 @bot.event
 async def on_ready():
-    print(f'We have logged in as {bot.user}')
+    synched = await bot.tree.sync()
     try:
-        synced = await bot.tree.sync()
-        print(f'Synced {len(synced)} command(s)')
+        if len(synched) == 0:
+            return print("No command found")
+        print(f"Successfully loaded {len(synched)}")
+        print(f"Logged in as {bot.user.name}")
     except Exception as e:
-        print(f'Error syncing commands: {e}')
+        print(f"Something went wrong! Error : {e}")
+
 @bot.event
 async def on_message(message):
-    global userlast
-    userlast = message.author.id
-    global start
-    if message.author.bot:
+    global lastUser, fromstart
+    if message.author == bot.user:
         return
-    if message.channel.id == counting_channel:
-        if message.content.isdigit():
-            if int(message.content) == start + 1:
-                if not message.author.id == userlast:
-                    userlast = message.author.id
-                    start += 1
-                    await message.add_reaction('✅')
+    if message.channel.id == COUNTING_CHANNEL:
+        if str(message.author.id) != lastUser:
+            if message.content.isdigit():
+                if int(message.content) == fromstart:
+                    lastUser = str(message.author.id)
+                    fromstart += 1
+                    await message.add_reaction("✅")
                 else:
-                    await message.add_reaction('❌')
-                    start = 0
-                    await message.channel.send(f'{message.author.mention} Please wait for someone else to count! The next number is {start + 1}.')
+                    fromstart = 1
+                    await message.add_reaction("❌")
+                    await message.channel.send(f"<@{message.author.id}> did it wrong! Next number: 1")
             else:
-                start = 0
-                await message.add_reaction('❌')
-                await message.channel.send(f'{message.author.mention} Please count in order! The next number is {start + 1}.')   
-@bot.tree.command(name="roll", description="Get a random fruit from the list")
-async def roll(interaction: discord.Interaction):
-    fruit = random.choice(fruits)
-    await interaction.response.send_message(f'{interaction.user.mention} You rolled: {fruit}')
+                fromstart = 1
+                await message.channel.send(f"<@{message.author.id}> did it wrong! Next number: 1")
+        else:
+            fromstart = 1
+            await message.channel.send(f"<@{message.author.id}> ! Wait for someone else to play! Next number: 1")
+@bot.tree.command(name="guessn", description="Guess the number")
+async def guessn(interaction:discord.Interaction, number:int):
+    global snumber
+    if number == snumber:
+        await interaction.response.send_message(f"You catched the number! The number was: {snumber}")
+        snumber = random.randint(1, 100)
+    elif number > snumber:
+        await interaction.response.send_message("The secret number is less than that number")
+    elif number < snumber:
+        await interaction.response.send_message("The secret number is greater than that number")
+    
 keep_alive()
 bot.run(token)
