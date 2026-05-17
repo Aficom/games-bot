@@ -6,7 +6,7 @@ import os
 import random
 from dotenv import load_dotenv
 import asyncio
-
+from keep_alive import keep_alive
 load_dotenv()
 
 token = os.getenv('TOKEN')
@@ -17,7 +17,59 @@ COUNTING_CHANNEL = 1504485545479504103
 snumber = random.randint(1, 100)
 fromstart = 1
 lastUser = ""
+words_list = [
+    "the", "of", "to", "and", "a", "in", "is", "it", "you", "that",
+    "he", "was", "for", "on", "are", "as", "with", "his", "they", "i",
+    "at", "be", "this", "have", "from", "or", "one", "had", "by", "word",
+    "but", "not", "what", "all", "were", "we", "when", "your", "can", "said",
+    "there", "use", "an", "each", "which", "she", "do", "how", "their", "if",
+    "will", "up", "other", "about", "out", "many", "then", "them", "these", "so",
+    "some", "her", "would", "make", "like", "him", "into", "time", "has", "look",
+    "two", "more", "write", "go", "see", "number", "no", "way", "could", "people",
+    "my", "than", "first", "water", "been", "call", "who", "oil", "its", "now",
+    "find", "long", "down", "day", "did", "get", "come", "made", "may", "part",
+    "over", "new", "sound", "take", "only", "little", "work", "know", "place", "year",
+    "live", "me", "back", "give", "most", "very", "after", "thing", "our", "just",
+    "name", "good", "sentence", "man", "think", "say", "great", "where", "help", "through",
+    "much", "before", "line", "right", "too", "mean", "old", "any", "same", "tell",
+    "boy", "follow", "came", "want", "show", "also", "around", "form", "three", "small",
+    "set", "put", "end", "does", "another", "well", "large", "must", "big", "even",
+    "such", "because", "turn", "here", "why", "ask", "went", "men", "read", "land",
+    "here", "home", "us", "move", "try", "kind", "hand", "picture", "again", "change",
+    "off", "play", "spell", "air", "away", "animal", "house", "point", "page", "letter",
+    "mother", "answer", "found", "study", "still", "learn", "should", "america", "world", "high",
+    "every", "near", "add", "food", "between", "own", "below", "country", "plant", "last",
+    "school", "father", "keep", "tree", "never", "start", "city", "earth", "eyes", "head", "blue", "green", "red", "yellow", "purple", "orange", "black", "white", "gray",
+    "pink", "brown", "cyan", "magenta", "violet", "indigo", "turquoise", "gold", "silver", "bronze",
+    "blue", "green", "vs", "versus", "ligma", "sigma", "nut", "don't", "can't", "won't", "shouldn't",
+    "couldn't", "wouldn't", "isn't", "aren't", "wasn't", "weren't", "hasn't", "haven't", "hadn't",
+    "could", "would", "should", "might", "must", "shall", "will", "can", "may", "do", "does", "did",
+    "mobile", "computer", "laptop", "tablet", "phone", "monitor", "keyboard", "mouse", "printer", "camera",
+    "television", "speaker", "headphones", "microphone", "router", "modem", "hard drive", "ssd", "usb",
+    "cable", "charger", "battery", "power", "flash", "external", "webcam", "projector",'internal',
+    "graphic", "design", "designer", "developer", "programmer", "coder", "engineer", "software", "hardware", "technology",
+    "internet", "network", "server", "client", "database", "cloud", "storage", "backup", "security", "encryption",
+    "password", "username", "login", "logout", "signup", "account", "profile", "settings", "privacy", "policy", "terms", "conditions", "support", "help", "contact", "feedback",
+    "cake", "today", "tomorrow", "yesterday", "week", "month", "year", "day", "hour", "minute", "second",
+    "channel", "server", "guild", "member", "user", "role", "emoji", "reaction", "message", "embed", "attachment",
+    "know", "dumb", "smart", "funny", "serious", "happy", "sad", "angry", "excited", "bored", "tired",
+    "hungry", "thirsty", "sick", "healthy", "strong", "weak", "fast", "slow", "big", "small",
+    "game", "every", "second", "minute", "hour", "day", "week", "month", "year", "time", "clock", "watch", "calendar",
+    "sun", "moon", "star", "planet", "galaxy", "universe", "space", "earth", "sky", "cloud",
+    "rain", "snow", "wind", "storm", "weather", "temperature", "hot", "cold", "warm", "cool",
+    "car", "bus", "train", "plane", "boat", "bicycle", "motorcycle", "truck", "scooter", "subway",
+    "road", "street", "highway", "bridge", "tunnel", "traffic", "accident", "parking", "gas", "fuel",
+    "money", "cash", "credit", "debit", "bank", "account", "card", "payment", "transaction", "bill", "invoice", "receipt", "price", "cost", "value",
+    "love", "friend", "family", "relationship", "marriage", "divorce", "breakup", "date", "romance", "heart",
+    "mind", "body", "soul", "spirit", "life", "death", "birth", "age", "youth", "old", "new",
+    "good", "bad", "happy", "sad", "angry", "excited", "bored", "tired", "hungry", "thirsty",
+    "sick", "healthy", "strong", "weak", "fast", "slow", "big", "small", "long", "short", "tall", "short", "wide", "narrow",
+    "deep", "shallow", "light", "dark", "bright", "dull", "soft", "hard", "smooth", "rough",
+    "clean", "dirty", "new", "old", "young", "ancient", "modern", "future", "past", "present", "time", "clock", "watch", "calendar",
+    #Add more words which are plural
+    "cats", "dogs", "birds", "fish", "trees", "flowers", "books", "pens", "computers", "phones",
 
+]
 class Math(discord.ui.Select):
     def __init__(self, answer):
         self.answer = round(answer, 2)
@@ -198,5 +250,13 @@ async def rpswithfriend(interaction: discord.Interaction, friend: discord.Member
         await friend.send(f"{interaction.user.name} challenged you to RPS! Choose your move below:", view=guest_view)
     except discord.Forbidden:
         await interaction.channel.send("Could not send a DM to one of the players. Make sure your DMs are open!")
-
+@bot.tree.command(name="dict", description="Is the word in my dictionary?")
+async def dict(interaction: discord.Interaction, sentence : str):
+    words = sentence.split(" ")
+    found = [word for word in words if word.lower() in words_list]
+    if found:
+        await interaction.response.send_message(f"✅ The following words are in the dictionary: {', '.join(found)}")
+    else:
+        await interaction.response.send_message("❌ None of the words you entered are in the dictionary.")
+keep_alive()
 bot.run(token)
